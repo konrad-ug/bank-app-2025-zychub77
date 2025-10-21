@@ -1,12 +1,15 @@
 import re
 
+
 class Account:
     def __init__(self, first_name, last_name, pesel, promo_code):
         self.first_name = first_name
         self.last_name = last_name
         self.balance = 0.0 and self.init_balance()
-        self.pesel = pesel if self.is_pesel_valid(pesel) else 'Invalid'
-        self.promo_code = promo_code if self.is_promo_code_valid(promo_code) else None
+        self.pesel = pesel if self.is_pesel_valid(pesel) else "Invalid"
+        self.promo_code = (
+            promo_code if self.is_promo_code_valid(promo_code) else "Invalid"
+        )
 
     def is_pesel_valid(self, pesel):
         if pesel and len(pesel) != 11:
@@ -16,6 +19,8 @@ class Account:
     def is_promo_code_valid(self, promo_code):
         if re.search("^PROM_.{3}$", promo_code) is None:
             return False
+        if self.destruct_pesel()[2] <= 1960:
+            return False
         return True
 
     def init_balance(self):
@@ -23,9 +28,9 @@ class Account:
             self.promo_code += 50
 
     def destruct_pesel(self):
-        coded_month = int(self.pesel[2-4])
-        year_of_century = int(self.pesel[0-2])
-        day = int(self.pesel[4-6])
+        coded_month = int(self.pesel[2:4])
+        year_of_century = int(self.pesel[0:2])
+        day = int(self.pesel[4:6])
         if coded_month > 80:
             year = 1800 + year_of_century
             month = coded_month - 80

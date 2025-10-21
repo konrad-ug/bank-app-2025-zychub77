@@ -4,10 +4,15 @@ import re
 
 class TestAccount:
     def test_account_creation(self):
-        account = Account("John", "Doe", "09359462739", "PROM_123")
+        account = Account("John", "Doe", "05080101397", "PROM_123")
         assert account.first_name == "John"
         assert account.last_name == "Doe"
-        assert account.pesel == "09359462739"
+        assert account.pesel == "05080101397"
         assert len(account.pesel) == 11 or account.pesel == "Invalid"
-        assert account.promo_code == "PROM_123"
-        assert re.search("^PROM_.{3}$",account.promo_code) != None or account.promo_code is None
+        print(account.promo_code)
+        print(account.destruct_pesel())
+        assert account.promo_code == "PROM_123" or account.destruct_pesel()[2] <= 1960
+        assert (
+            re.search("^PROM_.{3}$", account.promo_code) != None
+            or account.promo_code == "Invalid"
+        )
