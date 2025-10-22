@@ -47,3 +47,10 @@ class Account:
             year = 1900 + year_of_century
             month = coded_month
         return [day, month, year]
+
+    def receive_transfer(self, amount):
+        self.balance += amount
+    
+    def make_transfer(self, amount, transferAccount):
+        self.balance -= amount
+        transferAccount.receive_transfer(amount)

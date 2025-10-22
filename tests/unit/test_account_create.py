@@ -16,3 +16,9 @@ class TestAccount:
             re.search("^PROM_.{3}$", account.promo_code) != None
             or account.promo_code == "Invalid"
         )
+
+        account2 = Account("Jane", "Doe", "55020266789", "PROM_123")
+        firstBalance = account.balance + account2.balance
+        account.make_transfer(50, account2)
+        secondBalance = account.balance + account2.balance
+        assert firstBalance == secondBalance
