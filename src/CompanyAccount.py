@@ -1,4 +1,7 @@
-class CompanyAccount:
+from src.account import Account
+
+
+class CompanyAccount(Account):
     def __init__(self, company_name, NIP):
         self.company_name = company_name
         self.NIP = NIP if self.is_NIP_valid(NIP) else "Invalid"
@@ -9,15 +12,5 @@ class CompanyAccount:
             return False
         return True
 
-    def receive_transfer(self, amount):
-        self.balance += amount
-
-    def make_transfer(self, amount, transferAccount):
-        if self.balance >= amount:
-            self.balance -= amount
-            transferAccount.receive_transfer(amount)
-
     def make_express_transfer(self, amount, transferAccount):
-        if self.balance >= amount:
-            self.balance -= amount + 5
-            transferAccount.receive_transfer(amount)
+        super().make_express_transfer(amount, transferAccount, 5)

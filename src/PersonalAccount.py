@@ -1,11 +1,13 @@
 import re
+from src.account import Account
 
 
-class Account:
+class PersonalAccount(Account):
     def __init__(self, first_name, last_name, pesel, promo_code):
+        super().__init__()
+        self.init_balance()
         self.first_name = first_name
         self.last_name = last_name
-        self.balance = 0.0 and self.init_balance()
         self.pesel = pesel if self.is_pesel_valid(pesel) else "Invalid"
         self.promo_code = (
             promo_code if self.is_promo_code_valid(promo_code) else "Invalid"
@@ -48,15 +50,5 @@ class Account:
             month = coded_month
         return [day, month, year]
 
-    def receive_transfer(self, amount):
-        self.balance += amount
-
-    def make_transfer(self, amount, transferAccount):
-        if self.balance >= amount:
-            self.balance -= amount
-            transferAccount.receive_transfer(amount)
-
     def make_express_transfer(self, amount, transferAccount):
-        if self.balance >= amount:
-            self.balance -= amount + 1
-            transferAccount.receive_transfer(amount)
+        super().make_express_transfer(amount, transferAccount, 1)

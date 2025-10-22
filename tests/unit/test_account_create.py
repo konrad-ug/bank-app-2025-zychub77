@@ -1,10 +1,10 @@
-from src.account import Account
+from src.PersonalAccount import PersonalAccount
 import re
 
 
-class TestAccount:
+class TestPersonalAccount:
     def test_account_creation(self):
-        account = Account("John", "Doe", "05080101397", "PROM_123")
+        account = PersonalAccount("John", "Doe", "05080101397", "PROM_123")
         assert account.first_name == "John"
         assert account.last_name == "Doe"
         assert account.pesel == "05080101397"
@@ -17,7 +17,7 @@ class TestAccount:
             or account.promo_code == "Invalid"
         )
 
-        account2 = Account("Jane", "Doe", "55020266789", "PROM_123")
+        account2 = PersonalAccount("Jane", "Doe", "55020266789", "PROM_123")
         firstBalance = account.balance + account2.balance
         account.make_transfer(50.0, account2)
         secondBalance = account.balance + account2.balance
