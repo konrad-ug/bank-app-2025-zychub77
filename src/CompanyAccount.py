@@ -16,3 +16,8 @@ class CompanyAccount:
         if self.balance >= amount:
             self.balance -= amount
             transferAccount.receive_transfer(amount)
+
+    def make_express_transfer(self, amount, transferAccount):
+        if self.balance >= amount:
+            self.balance -= amount + 5
+            transferAccount.receive_transfer(amount)

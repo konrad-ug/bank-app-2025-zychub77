@@ -26,3 +26,8 @@ class TestAccount:
         account.balance = 10
         account.make_transfer(20.0, account2)
         assert account.balance == 10
+
+        account.balance = 10.0
+        account2.balance = 0.0
+        account.make_express_transfer(10.0, account2)
+        assert account.balance == -1.0
