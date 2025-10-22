@@ -19,6 +19,10 @@ class TestAccount:
 
         account2 = Account("Jane", "Doe", "55020266789", "PROM_123")
         firstBalance = account.balance + account2.balance
-        account.make_transfer(50, account2)
+        account.make_transfer(50.0, account2)
         secondBalance = account.balance + account2.balance
         assert firstBalance == secondBalance
+
+        account.balance = 10
+        account.make_transfer(20.0, account2)
+        assert account.balance == 10

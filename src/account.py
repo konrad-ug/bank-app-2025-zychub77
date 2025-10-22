@@ -50,7 +50,8 @@ class Account:
 
     def receive_transfer(self, amount):
         self.balance += amount
-    
+
     def make_transfer(self, amount, transferAccount):
-        self.balance -= amount
-        transferAccount.receive_transfer(amount)
+        if self.balance >= amount:
+            self.balance -= amount
+            transferAccount.receive_transfer(amount)
