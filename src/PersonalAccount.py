@@ -5,13 +5,14 @@ from src.account import Account
 class PersonalAccount(Account):
     def __init__(self, first_name, last_name, pesel, promo_code):
         super().__init__()
-        self.init_balance()
+
         self.first_name = first_name
         self.last_name = last_name
         self.pesel = pesel if self.is_pesel_valid(pesel) else "Invalid"
         self.promo_code = (
             promo_code if self.is_promo_code_valid(promo_code) else "Invalid"
         )
+        self.init_balance()
 
     def is_pesel_valid(self, pesel):
         if pesel and len(pesel) != 11:
@@ -26,8 +27,8 @@ class PersonalAccount(Account):
         return True
 
     def init_balance(self):
-        if self.promo_code is not None:
-            self.promo_code += 50
+        if self.is_promo_code_valid(self.promo_code):
+            self.balance += 50
 
     def destruct_pesel(self):
         coded_month = int(self.pesel[2:4])

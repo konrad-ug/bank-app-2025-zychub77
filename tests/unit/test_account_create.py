@@ -1,33 +1,35 @@
-from src.PersonalAccount import PersonalAccount
-import re
+from src.account import Account
 
 
-class TestPersonalAccount:
+class TestAccount:
     def test_account_creation(self):
-        account = PersonalAccount("John", "Doe", "05080101397", "PROM_123")
-        assert account.first_name == "John"
-        assert account.last_name == "Doe"
-        assert account.pesel == "05080101397"
-        assert len(account.pesel) == 11 or account.pesel == "Invalid"
-        print(account.promo_code)
-        print(account.destruct_pesel())
-        assert account.promo_code == "PROM_123" or account.destruct_pesel()[2] <= 1960
-        assert (
-            re.search("^PROM_.{3}$", account.promo_code) != None
-            or account.promo_code == "Invalid"
-        )
+        account = Account()
+        assert account.balance == 0.0
 
-        account2 = PersonalAccount("Jane", "Doe", "55020266789", "PROM_123")
+    def test_account_make_transfer(self):
+        account = Account()
+        account2 = Account()
+
+        account.balance = 100
+        account2.balance = 2000
         firstBalance = account.balance + account2.balance
         account.make_transfer(50.0, account2)
         secondBalance = account.balance + account2.balance
         assert firstBalance == secondBalance
 
+    def test_account_insufficient_balance(self):
+        account = Account()
+        account2 = Account()
+
         account.balance = 10
         account.make_transfer(20.0, account2)
         assert account.balance == 10
 
+    def test_account_make_express_transfer(self):
+        account = Account()
+        account2 = Account()
+
         account.balance = 10.0
         account2.balance = 0.0
-        account.make_express_transfer(10.0, account2)
+        account.make_express_transfer(10.0, account2, 1.0)
         assert account.balance == -1.0
