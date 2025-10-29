@@ -22,7 +22,7 @@ class PersonalAccount(Account):
     def is_promo_code_valid(self, promo_code):
         if re.search("^PROM_.{3}$", promo_code) is None:
             return False
-        if self.destruct_pesel()[2] <= 1960:
+        if self.pesel == "Invalid" or self.destruct_pesel()[2] <= 1960:
             return False
         return True
 
