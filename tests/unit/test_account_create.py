@@ -33,3 +33,13 @@ class TestAccount:
         account2.balance = 0.0
         account.make_express_transfer(10.0, account2, 1.0)
         assert account.balance == -1.0
+
+    def test_account_history(self):
+        account = Account()
+        account2 = Account()
+        account.receive_transfer(500)
+        account.make_transfer(300, account2)
+        account.make_express_transfer(100, account2, 1)
+        account.make_transfer(100, account2)
+
+        assert account.history == [500, -300, -100, -1]
