@@ -45,3 +45,19 @@ class TestCompanyAccount:
         account.make_transfer(100, account2)
 
         assert account.history == [500, -300, -100, -5]
+
+    @pytest.mark.parametrize(
+        "balance, history, expected",
+        [
+            (500, [10, -1775, -10, -1000000, 10000000000, 67], True),
+            (100, [-1775], True),
+            (99, [-1775], False),
+            (200, [10, 10, 10, 10], False),
+        ],
+        ids=["normal", "exactly_twice", "insufficient_balance", "no_tax"],
+    )
+    def test_take_loan(self, balance, history, expected, account):
+        account.balance = balance
+        account.history = history
+        print(account.balance, account.history)
+        assert account.take_loan(50) == expected

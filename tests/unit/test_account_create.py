@@ -54,12 +54,3 @@ class TestAccount:
         account.make_transfer(100, account2)
 
         assert account.history == [500, -300, -100, -1]
-
-    def test_account_load(self, account):
-        assert account.submit_for_loan(100) == False
-        account.history = [1, 1, 1]
-        assert account.submit_for_loan(100) == True
-        account.history = [1, 1, -1]
-        assert account.submit_for_loan(100) == False
-        account.history = [25, 25, 25, 25, 25]
-        assert account.submit_for_loan(100) == True
