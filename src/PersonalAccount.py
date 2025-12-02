@@ -53,3 +53,23 @@ class PersonalAccount(Account):
 
     def make_express_transfer(self, amount, transferAccount):
         super().make_express_transfer(amount, transferAccount, 1)
+
+    def approve_loan(self, amount):
+        if len(self.history) >= 5:
+            sum = 0
+            for x in self.history:
+                sum += x
+            if sum > amount:
+                return True
+        elif len(self.history) >= 3:
+            for x in self.history:
+                if x < 0:
+                    return False
+            return True
+        return False
+
+    def submit_for_loan(self, amount):
+        if self.approve_loan(amount) == True:
+            self.receive_transfer(amount)
+            return True
+        return False
