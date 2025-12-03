@@ -14,15 +14,30 @@ class TestAccountsAPI:
     def test_create_account(self, client):
         response = client.post(
             "/api/accounts",
-            json={"name": "Alice", "surname": "Smith", "pesel": "12345678901"},
+            json={"name": "Alice", "last_name": "Smith", "pesel": "12345678901"},
         )
 
         assert response.status_code == 201
         assert response.get_json() == {"message": "Account created"}
 
+    def test_create_account_pesel_already_in_use(self, client):
+        client.post(
+            "/api/accounts",
+            json={"name": "John", "last_name": "Doe", "pesel": "05280199999"},
+        )
+        response = client.post(
+            "/api/accounts",
+            json={"name": "John", "last_name": "Doe", "pesel": "05280199999"},
+        )
+
+        assert response.status_code == 409
+        assert response.get_json() == {
+            "message": "An account with this PESEL already exists"
+        }
+
     def test_get_all_accounts(self, client):
-        client.post("/api/accounts", json={"name": "A", "surname": "B", "pesel": "1"})
-        client.post("/api/accounts", json={"name": "C", "surname": "D", "pesel": "2"})
+        client.post("/api/accounts", json={"name": "A", "last_name": "B", "pesel": "1"})
+        client.post("/api/accounts", json={"name": "C", "last_name": "D", "pesel": "2"})
 
         response = client.get("/api/accounts")
         data = response.get_json()
@@ -33,8 +48,8 @@ class TestAccountsAPI:
         assert data[1]["pesel"] == "Invalid"
 
     def test_get_account_count(self, client):
-        client.post("/api/accounts", json={"name": "A", "surname": "B", "pesel": "1"})
-        client.post("/api/accounts", json={"name": "C", "surname": "D", "pesel": "2"})
+        client.post("/api/accounts", json={"name": "A", "last_name": "B", "pesel": "1"})
+        client.post("/api/accounts", json={"name": "C", "last_name": "D", "pesel": "2"})
 
         response = client.get("/api/accounts/count")
 
@@ -44,7 +59,7 @@ class TestAccountsAPI:
     def test_get_account_by_pesel(self, client):
         client.post(
             "/api/accounts",
-            json={"name": "A", "surname": "B", "pesel": "05280199999"},
+            json={"name": "A", "last_name": "B", "pesel": "05280199999"},
         )
 
         response = client.get("/api/accounts/05280199999")
@@ -63,7 +78,7 @@ class TestAccountsAPI:
     def test_delete_account(self, client):
         client.post(
             "/api/accounts",
-            json={"name": "A", "surname": "B", "pesel": "05280199999"},
+            json={"name": "A", "last_name": "B", "pesel": "05280199999"},
         )
 
         response = client.delete("/api/accounts/05280199999")
@@ -76,7 +91,7 @@ class TestAccountsAPI:
     def test_patch_account(self, client):
         client.post(
             "/api/accounts",
-            json={"name": "A", "surname": "B", "pesel": "05280199999"},
+            json={"name": "A", "last_name": "B", "pesel": "05280199999"},
         )
 
         response = client.patch(
@@ -88,7 +103,7 @@ class TestAccountsAPI:
     def test_patch_account_unknown_pesel(self, client):
         client.post(
             "/api/accounts",
-            json={"name": "A", "surname": "B", "pesel": "123"},
+            json={"name": "A", "last_name": "B", "pesel": "123"},
         )
 
         response = client.patch("/api/accounts/123")
