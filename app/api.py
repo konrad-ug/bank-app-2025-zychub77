@@ -65,6 +65,27 @@ def get_account_by_pesel(pesel):
     return jsonify(account_data), 200
 
 
+@app.route("/api/accounts/<pesel>/transfer", methods=["POST"])
+def make_transfer_by_pesel(pesel):
+    data = request.get_json()
+    account = registry.getAccountByPESEL(pesel)
+    if account is None:
+        return jsonify({"message": "No account found"}), 404
+    if data["type"] == "incoming":
+        account.receive_transfer(data["amount"])
+        return jsonify({"message": "Transfer received"}), 200
+
+    outgoing_account = registry.getAccountByPESEL(data["outgoing_pesel"])
+    if outgoing_account is None:
+        return jsonify({"message": "No account found"}), 404
+
+    transfer_success = account.make_transfer(data["amount"], outgoing_account)
+    if not transfer_success:
+        return jsonify({"message": "Transfer failed"}), 200
+
+    return jsonify({"message": "Transfer completed successfully"}), 200
+
+
 @app.route("/api/accounts/<pesel>", methods=["PATCH"])
 def update_account(pesel):
     account = registry.getAccountByPESEL(pesel)
