@@ -109,3 +109,48 @@ class TestAccountsAPI:
         response = client.patch("/api/accounts/123")
         assert response.status_code == 200
         assert response.get_json()["message"] == "Account updated"
+
+    @pytest.mark.parametrize(
+        "pesel, outgoing_pesel, amount, type, expected_code, expected_message",
+        [
+            ("123", None, None, None, 404, "No account found"),
+            ("04280199999", None, 500, "incoming", 200, "Transfer received"),
+            ("04280199999", None, 500, "outgoing", 404, "No account found"),
+            ("04280199999", "02280199999", 500, "outgoing", 200, "Transfer failed"),
+            (
+                "04280199999",
+                "02280199999",
+                50,
+                "outgoing",
+                200,
+                "Transfer completed successfully",
+            ),
+        ],
+        ids=[
+            "invalid_target_account_transfer",
+            "valid_incoming_transfer",
+            "invalid_outgoing_account_outgoing_transfer",
+            "valid_outgoing_transfer_insufficient_funds",
+            "valid_outgoing_transfer_sufficient_funds",
+        ],
+    )
+    def test_transfer(
+        self,
+        pesel,
+        outgoing_pesel,
+        amount,
+        type,
+        expected_code,
+        expected_message,
+        client,
+    ):
+        registry.addAccount(PersonalAccount("John", "Doe", "04280199999", "PROM_123"))
+        registry.addAccount(PersonalAccount("John", "Doe", "02280199999", "PROM_123"))
+        registry.getAccountByPESEL("04280199999").balance = 50
+        response = client.post(
+            f"api/accounts/{pesel}/transfer",
+            json={"type": type, "outgoing_pesel": outgoing_pesel, "amount": amount},
+        )
+
+        assert response.status_code == expected_code
+        assert response.get_json()["message"] == expected_message
