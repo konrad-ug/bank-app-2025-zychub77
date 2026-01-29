@@ -1,17 +1,11 @@
 from src.account import Account
 import requests
-import datetime
 
 
-BANK_APP_MF_URL = "https://wl-api.mf.gov.pl/api/search/nip/"
-
-
-# force_inactive exists because it's not reasonably possible to find an inactive NIP by hand, and it could get reactivated/removed
 class CompanyAccount(Account):
-    def __init__(self, company_name, NIP, force_inactive=False):
+    def __init__(self, company_name, NIP):
         super().__init__()
         self.company_name = company_name
-        self.force_inactive = force_inactive
         self.NIP = self.set_NIP(NIP)
         if self.NIP == "Unregistered":
             raise ValueError("Company not registered!!")
@@ -35,17 +29,16 @@ class CompanyAccount(Account):
         return False
 
     def check_NIP(self, NIP):
-        mdate = datetime.date.today()
-        url = f"{BANK_APP_MF_URL }{NIP}?date={mdate}"
+        url = f"https://wl-api.mf.gov.pl/api/search/nip/{NIP}?date=2025-12-01"
         response = requests.get(url)
 
-        data = response.json()["result"]
-        print(data)
-        if data["subject"] == None and not self.force_inactive:
+        status = response.status_code
+        if status_code != 200:
             print("Konto nie istnieje")
             return False
 
-        if self.force_inactive or data["subject"]["statusVat"] != "Czynny":
+        data = response.json()
+        if data["statusVat"] != "Czynny":
             print("Konto nieczynne")
             return False
         print("Konto czynne")

@@ -5,21 +5,33 @@ import pytest
 class TestCompanyAccount:
     @pytest.fixture
     def account(self):
-        account = CompanyAccount("żabka", "1234567890")
+        account = CompanyAccount("żabka", "8461627563")
         return account
 
     @pytest.fixture
     def account2(self):
-        account2 = CompanyAccount("biedronka", "0987654321")
+        account2 = CompanyAccount("biedronka", "8461627563")
         return account2
 
     def test_account_creation(self, account):
         assert account.company_name == "żabka"
-        assert account.NIP == "1234567890"
+        assert account.NIP == "8461627563"
 
     def test_account_NIP_validation(self):
         account3 = CompanyAccount("lidl", "123")
         assert account3.NIP == "Invalid"
+
+    def test_account_NIP_unregistered(self):
+        try:
+            account = CompanyAccount("żabka", "1111111111")
+        except ValueError as error:
+            assert str(error) == "Company not registered!!"
+
+    def test_account_NIP_inactive(self):
+        try:
+            account = CompanyAccount("żabka", "1111111111", force_inactive=True)
+        except ValueError as error:
+            assert str(error) == "Company not registered!!"
 
     @pytest.mark.parametrize(
         "balance1,balance2,expected1,expected2",
