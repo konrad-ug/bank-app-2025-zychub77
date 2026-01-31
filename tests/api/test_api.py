@@ -95,10 +95,15 @@ class TestAccountsAPI:
         )
 
         response = client.patch(
-            "/api/accounts/05280199999", json={"pesel": "05280299999"}
+            "/api/accounts/05280199999", json={"name": "Alice", "surname": "Smith"}
         )
         assert response.status_code == 200
         assert response.get_json()["message"] == "Account updated"
+
+        response = client.get("/api/accounts/05280199999")
+        data = response.get_json()
+        assert data["first_name"] == "Alice"
+        assert data["last_name"] == "Smith"
 
     def test_patch_account_unknown_pesel(self, client):
         client.post(
@@ -106,9 +111,24 @@ class TestAccountsAPI:
             json={"name": "A", "last_name": "B", "pesel": "123"},
         )
 
-        response = client.patch("/api/accounts/123")
+        response = client.patch("/api/accounts/123", json={"name": "Zed"})
+        assert response.status_code == 404
+        assert response.get_json()["message"] == "Account not found"
+
+    def test_patch_account_with_last_name_field(self, client):
+        client.post(
+            "/api/accounts",
+            json={"name": "A", "last_name": "B", "pesel": "05280111111"},
+        )
+
+        response = client.patch(
+            "/api/accounts/05280111111", json={"last_name": "Kowalski"}
+        )
         assert response.status_code == 200
         assert response.get_json()["message"] == "Account updated"
+
+        response = client.get("/api/accounts/05280111111")
+        assert response.get_json()["last_name"] == "Kowalski"
 
     @pytest.mark.parametrize(
         "pesel, outgoing_pesel, amount, type, expected_code, expected_message",
