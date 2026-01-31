@@ -1,9 +1,12 @@
 from src.account import Account
 import requests
 import datetime
+import os
 
 
-BANK_APP_MF_URL = "https://wl-api.mf.gov.pl/api/search/nip/"
+BANK_APP_MF_URL = os.getenv(
+    "BANK_APP_MF_URL", "https://wl-api.mf.gov.pl/api/search/nip/"
+)
 
 
 # force_inactive exists because it's not reasonably possible to find an inactive NIP by hand, and it could get reactivated/removed

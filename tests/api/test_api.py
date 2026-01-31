@@ -154,3 +154,83 @@ class TestAccountsAPI:
 
         assert response.status_code == expected_code
         assert response.get_json()["message"] == expected_message
+
+
+class TestAccountsAPIMocked:
+
+    def test_create_account_uses_registry_add(self, mocker, client):
+        mocker.patch("app.api.registry.getAllAccounts", return_value=[])
+        add_account = mocker.patch("app.api.registry.addAccount")
+
+        response = client.post(
+            "/api/accounts",
+            json={"name": "Alice", "last_name": "Smith", "pesel": "12345678901"},
+        )
+
+        assert response.status_code == 201
+        add_account.assert_called_once()
+        created_account = add_account.call_args.args[0]
+        assert created_account.first_name == "Alice"
+        assert created_account.last_name == "Smith"
+        assert created_account.pesel == "12345678901"
+
+    def test_create_account_duplicate_pesel_skips_add(self, mocker, client):
+        existing = mocker.Mock()
+        existing.pesel = "12345678901"
+        mocker.patch("app.api.registry.getAllAccounts", return_value=[existing])
+        add_account = mocker.patch("app.api.registry.addAccount")
+
+        response = client.post(
+            "/api/accounts",
+            json={"name": "Alice", "last_name": "Smith", "pesel": "12345678901"},
+        )
+
+        assert response.status_code == 409
+        add_account.assert_not_called()
+
+    def test_get_account_count_uses_registry(self, mocker, client):
+        mocker.patch("app.api.registry.getNumberOfAccounts", return_value=7)
+
+        response = client.get("/api/accounts/count")
+
+        assert response.status_code == 200
+        assert response.get_json() == {"count": 7}
+
+    def test_get_account_by_pesel_not_found(self, mocker, client):
+        mocker.patch("app.api.registry.getAccountByPESEL", return_value=None)
+
+        response = client.get("/api/accounts/999")
+
+        assert response.status_code == 200
+        assert response.get_json()["pesel"] is None
+
+    def test_transfer_incoming_calls_receive_transfer(self, mocker, client):
+        account = mocker.Mock()
+        mocker.patch("app.api.registry.getAccountByPESEL", return_value=account)
+
+        response = client.post(
+            "/api/accounts/123/transfer",
+            json={"type": "incoming", "outgoing_pesel": None, "amount": 50},
+        )
+
+        assert response.status_code == 200
+        assert response.get_json()["message"] == "Transfer received"
+        account.receive_transfer.assert_called_once_with(50)
+
+    def test_transfer_outgoing_calls_make_transfer(self, mocker, client):
+        incoming_account = mocker.Mock()
+        outgoing_account = mocker.Mock()
+        incoming_account.make_transfer.return_value = True
+        mocker.patch(
+            "app.api.registry.getAccountByPESEL",
+            side_effect=[incoming_account, outgoing_account],
+        )
+
+        response = client.post(
+            "/api/accounts/123/transfer",
+            json={"type": "outgoing", "outgoing_pesel": "456", "amount": 50},
+        )
+
+        assert response.status_code == 200
+        assert response.get_json()["message"] == "Transfer completed successfully"
+        incoming_account.make_transfer.assert_called_once_with(50, outgoing_account)
