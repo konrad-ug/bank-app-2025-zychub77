@@ -62,6 +62,32 @@ class TestCompanyAccount:
         except ValueError as error:
             assert str(error) == "Company not registered!!"
 
+    def test_send_history_via_email_success(self, account, mocker):
+        account.history = [100, -50]
+        send = mocker.patch("smtp.smtp.SMTPClient.send", return_value=True)
+
+        result = account.send_history_via_email("john_smith@gmail.com")
+
+        assert result == True
+        send.assert_called_once_with(
+            "Account history",
+            "Company account history: [100, -50]",
+            "john_smith@gmail.com",
+        )
+
+    def test_send_history_via_email_failure(self, account, mocker):
+        account.history = [100, -50]
+        send = mocker.patch("smtp.smtp.SMTPClient.send", return_value=False)
+
+        result = account.send_history_via_email("john_smith@gmail.com")
+
+        assert result == False
+        send.assert_called_once_with(
+            "Account history",
+            "Company account history: [100, -50]",
+            "john_smith@gmail.com",
+        )
+
     @pytest.mark.parametrize(
         "balance1,balance2,expected1,expected2",
         [(100, 100, 45, 150), (20, 0, 20, 0), (50, 0, -5, 50)],
