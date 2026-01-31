@@ -1,15 +1,32 @@
 from src.CompanyAccount import CompanyAccount
 import pytest
+import os
 
 
 class TestCompanyAccount:
     @pytest.fixture
-    def account(self):
+    def active_nip_response(self, mocker):
+        mock_resp = mocker.Mock()
+        mock_resp.json.return_value = {
+            "result": {"subject": {"statusVat": "Czynny"}}
+        }
+        return mock_resp
+
+    @pytest.fixture
+    def unregistered_nip_response(self, mocker):
+        mock_resp = mocker.Mock()
+        mock_resp.json.return_value = {"result": {"subject": None}}
+        return mock_resp
+
+    @pytest.fixture
+    def account(self, mocker, active_nip_response):
+        mocker.patch("src.CompanyAccount.requests.get", return_value=active_nip_response)
         account = CompanyAccount("żabka", "8461627563")
         return account
 
     @pytest.fixture
-    def account2(self):
+    def account2(self, mocker, active_nip_response):
+        mocker.patch("src.CompanyAccount.requests.get", return_value=active_nip_response)
         account2 = CompanyAccount("biedronka", "8461627563")
         return account2
 
@@ -21,13 +38,25 @@ class TestCompanyAccount:
         account3 = CompanyAccount("lidl", "123")
         assert account3.NIP == "Invalid"
 
-    def test_account_NIP_unregistered(self):
+    def test_account_NIP_unregistered(self, mocker, unregistered_nip_response):
+        mocker.patch.dict(
+            os.environ, {"BANK_APP_MF_URL": "https://example.test/api/search/nip/"}
+        )
+        mocker.patch(
+            "src.CompanyAccount.requests.get", return_value=unregistered_nip_response
+        )
         try:
             account = CompanyAccount("żabka", "1111111111")
         except ValueError as error:
             assert str(error) == "Company not registered!!"
 
-    def test_account_NIP_inactive(self):
+    def test_account_NIP_inactive(self, mocker, unregistered_nip_response):
+        mocker.patch.dict(
+            os.environ, {"BANK_APP_MF_URL": "https://example.test/api/search/nip/"}
+        )
+        mocker.patch(
+            "src.CompanyAccount.requests.get", return_value=unregistered_nip_response
+        )
         try:
             account = CompanyAccount("żabka", "1111111111", force_inactive=True)
         except ValueError as error:
