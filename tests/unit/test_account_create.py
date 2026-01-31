@@ -54,3 +54,11 @@ class TestAccount:
         account.make_transfer(100, account2)
 
         assert account.history == [500, -300, -100, -1]
+
+    def test_send_history_via_email(self, account, mocker):
+        send = mocker.patch("smtp.smtp.SMTPClient.send", return_value=False)
+        result = account.send_history_via_email("john_smith@gmail.com")
+        assert result == False
+        send.assert_called_once_with(
+            "Account history", "Account history: []", "john_smith@gmail.com"
+        )

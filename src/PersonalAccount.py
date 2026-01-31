@@ -8,6 +8,7 @@ class PersonalAccount(Account):
 
         self.first_name = first_name
         self.last_name = last_name
+        self.history_email_preamble = "Personal account history:"
         self.pesel = pesel if self.is_pesel_valid(pesel) else "Invalid"
         self.promo_code = (
             promo_code if self.is_promo_code_valid(promo_code) else "Invalid"
@@ -73,3 +74,6 @@ class PersonalAccount(Account):
             self.receive_transfer(amount)
             return True
         return False
+
+    def send_history_via_email(self, email):
+        return super().send_history_via_email(email)

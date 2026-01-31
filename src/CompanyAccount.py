@@ -15,6 +15,7 @@ class CompanyAccount(Account):
         super().__init__()
         self.company_name = company_name
         self.force_inactive = force_inactive
+        self.history_email_preamble = "Company account history:"
         self.NIP = self.set_NIP(NIP)
         if self.NIP == "Unregistered":
             raise ValueError("Company not registered!!")
@@ -53,3 +54,6 @@ class CompanyAccount(Account):
             return False
         print("Konto czynne")
         return True
+
+    def send_history_via_email(self, email):
+        return super().send_history_via_email(email)
