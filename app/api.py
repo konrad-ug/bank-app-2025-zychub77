@@ -89,8 +89,16 @@ def make_transfer_by_pesel(pesel):
 @app.route("/api/accounts/<pesel>", methods=["PATCH"])
 def update_account(pesel):
     account = registry.getAccountByPESEL(pesel)
-    if account is not None:
-        account.pesel = pesel
+    if account is None:
+        return jsonify({"message": "Account not found"}), 404
+
+    data = request.get_json() or {}
+    if "name" in data:
+        account.first_name = data["name"]
+    if "surname" in data:
+        account.last_name = data["surname"]
+    if "last_name" in data:
+        account.last_name = data["last_name"]
     return jsonify({"message": "Account updated"}), 200
 
 
