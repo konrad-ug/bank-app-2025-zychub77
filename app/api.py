@@ -96,6 +96,8 @@ def update_account(pesel):
 
 @app.route("/api/accounts/<pesel>", methods=["DELETE"])
 def delete_account(pesel):
-    accounts_data = registry.getAllAccounts()
-    registry.accounts = filter(lambda account: account.pesel != pesel, accounts_data)
+    accounts_data = list(registry.getAllAccounts())
+    registry.accounts = [
+        account for account in accounts_data if account.pesel != pesel
+    ]
     return jsonify({"message": "Account deleted"}), 200

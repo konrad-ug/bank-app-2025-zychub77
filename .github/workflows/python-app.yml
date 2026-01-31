@@ -33,9 +33,30 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Start API server
+        run: |
+          nohup flask --app app.api run --host 127.0.0.1 --port 5000 > flask.log 2>&1 &
+          python - <<'PY'
+          import socket
+          import time
+
+          for _ in range(50):
+              sock = socket.socket()
+              try:
+                  sock.connect(("127.0.0.1", 5000))
+                  sock.close()
+                  print("API server is ready")
+                  break
+              except OSError:
+                  time.sleep(0.1)
+          else:
+              raise SystemExit("API server did not start in time")
+          PY
       - name: Test with pytest
         run: |
           python3 -m coverage run --source=src,app -m pytest
+        env:
+          API_BASE_URL: http://127.0.0.1:5000
 
       - name: Display coverage results
         run: |
