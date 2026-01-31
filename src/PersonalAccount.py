@@ -77,3 +77,14 @@ class PersonalAccount(Account):
 
     def send_history_via_email(self, email):
         return super().send_history_via_email(email)
+
+    def to_dict(self):
+        return {
+            "type": "personal",
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "pesel": self.pesel,
+            "balance": self.balance,
+            "history": self.history,
+            "promo_code": self.promo_code,
+        }
