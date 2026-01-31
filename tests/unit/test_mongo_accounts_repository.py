@@ -24,6 +24,30 @@ def test_save_all_clears_and_upserts(mocker):
     assert mock_collection.update_one.call_count == 2
 
 
+def test_save_all_without_to_dict_uses_fallback(mocker):
+    mock_collection = mocker.Mock()
+    mock_db = mocker.MagicMock()
+    mock_db.__getitem__.return_value = mock_collection
+    mock_client = mocker.MagicMock()
+    mock_client.__getitem__.return_value = mock_db
+    mocker.patch("src.MongoAccountsRepository.MongoClient", return_value=mock_client)
+
+    repo = MongoAccountsRepository("mongodb://test")
+
+    class BareAccount:
+        def __init__(self):
+            self.pesel = "11111111111"
+            self.balance = 5.0
+            self.history = [5.0]
+
+    repo.save_all([BareAccount()])
+
+    mock_collection.delete_many.assert_called_once_with({})
+    mock_collection.update_one.assert_called_once()
+    args, _ = mock_collection.update_one.call_args
+    assert args[0] == {"pesel": "11111111111"}
+
+
 def test_load_all_returns_accounts(mocker):
     mock_collection = mocker.Mock()
     mock_collection.find.return_value = [
