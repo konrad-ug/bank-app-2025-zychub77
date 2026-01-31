@@ -175,6 +175,40 @@ class TestAccountsAPI:
         assert response.status_code == expected_code
         assert response.get_json()["message"] == expected_message
 
+    def test_save_and_load_accounts(self, client, mocker):
+        client.post(
+            "/api/accounts",
+            json={"name": "A", "last_name": "B", "pesel": "05280199999"},
+        )
+        client.post(
+            "/api/accounts",
+            json={"name": "C", "last_name": "D", "pesel": "05280199998"},
+        )
+
+        save_all = mocker.patch("app.api.accounts_repository.save_all")
+        load_all = mocker.patch(
+            "app.api.accounts_repository.load_all",
+            return_value=list(registry.getAllAccounts()),
+        )
+
+        response = client.post("/api/accounts/save")
+        assert response.status_code == 200
+        assert response.get_json()["message"] == "Accounts saved"
+        save_all.assert_called_once()
+
+        response = client.get("/api/accounts")
+        assert response.status_code == 200
+        assert len(response.get_json()) == 2
+
+        response = client.post("/api/accounts/load")
+        assert response.status_code == 200
+        assert response.get_json()["message"] == "Accounts loaded"
+        load_all.assert_called_once()
+
+        response = client.get("/api/accounts")
+        assert response.status_code == 200
+        assert len(response.get_json()) == 2
+
 
 class TestAccountsAPIMocked:
 
